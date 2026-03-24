@@ -90,7 +90,7 @@
     <div class="grid" id="stockGrid"></div>
 
     <footer class="footer">
-        <p>© 2026 I'm Ra| Stock Hub</p>
+        <p>© 2026 I'm Ra | Stock Hub</p>
     </footer>
 </div>
 
@@ -104,7 +104,6 @@
 </div>
 
 <script>
-    // បញ្ជីទំនិញបោះដុំ (តម្លៃបូក $1 រួចរាល់)
     const stockItems = [
         { name: "YouTube Premium", icon: "fab fa-youtube c-yt", plans: [["1 Acc", 3.00], ["5 Acc", 7.00], ["10 Acc", 9.50]] },
         { name: "CapCut Pro", icon: "fas fa-video c-cc", plans: [["1 Acc", 2.80], ["5 Acc", 7.50], ["10 Acc", 10.00]] },
@@ -159,8 +158,10 @@
     }
 
     function confirmOrder() {
-        const admin = "Im_sal88"; // ប្តូរទៅកាន់ Admin ថ្មី
-        const message = `សួស្តីបងខ្ញុំចង់ទិញដុំ (Stock) ${currentItem.name} ចំនួន ${selectedPlan[0]} ដែលមានតម្លៃសរុប $${selectedPlan[1].toFixed(2)} ចឹងខ្ញុំសុំ QR ដើម្បីទូទាត់ប្រាក់ជូនបង 🙏`;
+        const admin = "Im_sal88"; 
+        // កែសម្រួលអត្ថបទសារតាមការចង់បានរបស់អ្នក
+        const message = `សួស្តីបងខ្ញុំចង់ទិញ Stock ${currentItem.name} ${selectedPlan[0]} ដែលមានតម្លៃ $${selectedPlan[1].toFixed(2)} ចឹងខ្ញុំសុំ QR ដើម្បីទូទាត់ប្រាក់ជូន 🙏`;
+        
         window.open(`https://t.me/${admin}?text=${encodeURIComponent(message)}`, '_blank');
         closeSheet();
     }
