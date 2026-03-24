@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stock Premium Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f4f7f6; --card: #ffffff; --text: #2d3436; --accent: #00b894; --accent-soft: #e8f8f5;
+            --shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --card: #2d2d2d; --text: #dfe6e9; --accent: #55efc4; --accent-soft: #263e38;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px 25px; }
+        .logo { font-size: 19px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .theme-btn { width: 40px; height: 40px; border-radius: 12px; border: none; background: var(--card); color: var(--text); box-shadow: var(--shadow); cursor: pointer; }
+
+        .section-tag { font-size: 13px; font-weight: 700; color: #636e72; margin-bottom: 15px; display: block; opacity: 0.8; }
+
+        /* Stock Grid */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .item { 
+            background: var(--card); border-radius: 22px; padding: 22px 10px; 
+            text-align: center; cursor: pointer; box-shadow: var(--shadow); 
+            border: 1px solid rgba(0,0,0,0.02); transition: 0.2s;
+        }
+        .item:active { transform: scale(0.93); background: var(--accent-soft); }
+        .item i { font-size: 32px; margin-bottom: 10px; display: block; }
+        .item p { font-size: 14px; font-weight: 600; }
+
+        /* Bottom Sheet Popup */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; align-items: flex-end; z-index: 1000; }
+        .overlay.active { display: flex; }
+        
+        .sheet { 
+            background: var(--card); width: 100%; border-radius: 30px 30px 0 0; 
+            padding: 25px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            max-height: 85vh; display: flex; flex-direction: column;
+        }
+        .overlay.active .sheet { transform: translateY(0); }
+        
+        .handle { width: 45px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px; }
+        .title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 20px; color: var(--accent); }
+
+        /* Option List */
+        .list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
+        .opt { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 16px 20px; background: var(--bg); border-radius: 18px; 
+            border: 2px solid transparent; cursor: pointer; 
+        }
+        .opt.active { border-color: var(--accent); background: var(--accent-soft); }
+        .opt-info { display: flex; flex-direction: column; }
+        .opt-qty { font-weight: 600; font-size: 15px; }
+        .opt-price { font-weight: 700; color: var(--accent); font-size: 16px; margin-top: 2px; }
+
+        .btn-order { 
+            width: 100%; padding: 18px; border-radius: 20px; border: none; 
+            background: var(--accent); color: white; font-weight: 700; font-size: 16px; 
+            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2); 
+        }
+
+        /* Colors */
+        .c-yt { color: #FF0000; } .c-cc { color: #000; } [data-theme="dark"] .c-cc { color: #fff; }
+        .c-am { color: #fa2d48; } .c-gpt { color: #10a37f; } .c-cv { color: #00C4CC; }
+
+        .footer { text-align: center; padding: 40px 10px; font-size: 11px; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="header">
+        <div class="logo"><i class="fas fa-boxes"></i> Stock Store (ទិញដុំ)</div>
+        <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    </header>
+
+    <span class="section-tag">ជ្រើសរើស App ដែលចង់ស្តុក៖</span>
+    <div class="grid" id="stockGrid"></div>
+
+    <footer class="footer">
+        <p>© 2026 I'm Ra| Stock Hub</p>
+    </footer>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target.id==='overlay') closeSheet()">
+    <div class="sheet">
+        <div class="handle"></div>
+        <div class="title" id="mTitle">Select Quantity</div>
+        <div class="list" id="mList"></div>
+        <button class="btn-order" onclick="confirmOrder()">កម្ម៉ង់ទិញដុំឥឡូវនេះ</button>
+    </div>
+</div>
+
+<script>
+    // បញ្ជីទំនិញបោះដុំ (តម្លៃបូក $1 រួចរាល់)
+    const stockItems = [
+        { name: "YouTube Premium", icon: "fab fa-youtube c-yt", plans: [["1 Acc", 3.00], ["5 Acc", 7.00], ["10 Acc", 9.50]] },
+        { name: "CapCut Pro", icon: "fas fa-video c-cc", plans: [["1 Acc", 2.80], ["5 Acc", 7.50], ["10 Acc", 10.00]] },
+        { name: "Alight Motion", icon: "fas fa-bolt", plans: [["1 Acc", 2.50], ["5 Acc", 7.00], ["10 Acc", 9.00]] },
+        { name: "Apple Music", icon: "fab fa-apple c-am", plans: [["1 Acc", 2.50], ["5 Acc", 5.00], ["10 Acc", 7.50]] },
+        { name: "YouTube Music", icon: "fas fa-music c-yt", plans: [["1 Acc", 2.50], ["5 Acc", 5.00], ["10 Acc", 7.50]] },
+        { name: "ChatGPT Pro", icon: "fas fa-robot c-gpt", plans: [["1 Acc", 6.50]] },
+        { name: "Picsart Pro", icon: "fas fa-images", plans: [["1 Acc Plan", 1.75], ["5 Acc Plan", 4.00], ["10 Acc Plan", 6.00], ["1 Acc Inv 100", 3.50]] },
+        { name: "Canva Pro", icon: "fas fa-palette c-cv", plans: [["1 Acc Inv 100", 3.25], ["Lifetime Inv 500", 16.00]] }
+    ];
+
+    let currentItem = null;
+    let selectedPlan = null;
+
+    function renderGrid() {
+        const grid = document.getElementById('stockGrid');
+        stockItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.onclick = () => openSheet(item);
+            div.innerHTML = `<i class="${item.icon}"></i><p>${item.name}</p>`;
+            grid.appendChild(div);
+        });
+    }
+
+    function openSheet(item) {
+        currentItem = item;
+        selectedPlan = item.plans[0];
+        document.getElementById('mTitle').innerText = item.name + " (Stock)";
+        const list = document.getElementById('mList');
+        list.innerHTML = "";
+        
+        item.plans.forEach((plan, i) => {
+            const opt = document.createElement('div');
+            opt.className = `opt ${i === 0 ? 'active' : ''}`;
+            opt.onclick = () => {
+                document.querySelectorAll('.opt').forEach(el => el.classList.remove('active'));
+                opt.classList.add('active');
+                selectedPlan = plan;
+            };
+            opt.innerHTML = `
+                <div class="opt-info">
+                    <span class="opt-qty">${plan[0]}</span>
+                    <span class="opt-price">$${plan[1].toFixed(2)}</span>
+                </div>
+                <i class="fas fa-check-circle" style="color:var(--accent); font-size: 20px;"></i>
+            `;
+            list.appendChild(opt);
+        });
+        document.getElementById('overlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function confirmOrder() {
+        const admin = "Im_sal88"; // ប្តូរទៅកាន់ Admin ថ្មី
+        const message = `សួស្តីបងខ្ញុំចង់ទិញដុំ (Stock) ${currentItem.name} ចំនួន ${selectedPlan[0]} ដែលមានតម្លៃសរុប $${selectedPlan[1].toFixed(2)} ចឹងខ្ញុំសុំ QR ដើម្បីទូទាត់ប្រាក់ជូនបង 🙏`;
+        window.open(`https://t.me/${admin}?text=${encodeURIComponent(message)}`, '_blank');
+        closeSheet();
+    }
+
+    function closeSheet() {
+        document.getElementById('overlay').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.hasAttribute('data-theme');
+        isDark ? document.body.removeAttribute('data-theme') : document.body.setAttribute('data-theme', 'dark');
+        document.querySelector('.theme-btn i').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+    }
+
+    renderGrid();
+</script>
+</body>
+</html>
